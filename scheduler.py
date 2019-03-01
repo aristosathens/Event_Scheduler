@@ -15,20 +15,52 @@
     API:
 '''
 
+# -------------------------- Imports -------------------------- #
+
+# My modules
 from google_calendar import get_events
 
 import datetime
 from pytz import timezone
 
+# -------------------------- Constants -------------------------- #
+
+# datetime codes. Monday == 0, Sunday == 6.
+_weekdays = [ 0, 1, 2, 3, 4 ]
+_weekends = [ 5, 6 ]
+_all_days = _weekdays + _weekends
+
+# datetime hours.
+_workday_hours = list(range(9, 17))             # 9am-5pm
+_extended_workday_hours = list(range(8, 19))    # 8am-7pm
+_all_hours = list(range(0, 24))                 # 24 hours
+
+# -------------------------- General Helper Functions -------------------------- #
+
+def minutes_to_seconds(minutes):
+    return 60 * minutes
+
+def hours_to_seconds(hours):
+    return minutes_to_seconds(60 * hours)
+
+def days_to_seconds(days):
+    return hours_to_seconds(24 * days)
+
+def get_duration_in_seconds(days = 0, hours = 0, minutes = 0, seconds = 0):
+    return days_to_seconds(days) \
+            + hours_to_seconds(hours) \
+            + minutes_to_seconds(minutes) \
+            + seconds
+
+# -------------------------- Scheduler Helper Functions -------------------------- #
 
 def get_datetime_object(event_dict):
     '''
         Get date-time object from event dict.
         event_dict has form:
-            {'date' : 2019-02-25}
+            {'date' : '2019-02-25'}
         or:
-            {'dateTime' : 2019-02-25 13:30:00-08:00}
-
+            {'dateTime' : '2019-02-25 13:30:00-08:00'}
     '''
     event_dict = event_dict.get('dateTime', event_dict.get('date'))
     # This handles colon in time-zone: 2019-02-25 13:30:00-08:00 --> 2019-02-25 13:30:00-0800
@@ -47,36 +79,58 @@ def get_datetime_object(event_dict):
 
 def get_start_datetime(event):
     '''
-
+        Get start dateTime object from event.
     '''
     return get_datetime_object(event['start'])
 
 def get_end_datetime(event):
     '''
-
+        Get end dateTime object from event.
     '''
     return get_datetime_object(event['end'])
 
-def schedule_event(events, desired_duration):
+def is_valid_datetime(datetime_object, allowed_days, allowed_hours):
+    '''
+        Checks that datetime_object conforms to allowed parameters.
+    '''
+    if datetime_object.week not in allowed_days:
+        return False
+    elif datetime_object.hour not in allowed_hours:
+        return False
+
+    return True
+
+# -------------------------- Event Scheduling Function -------------------------- #
+
+def schedule_event(events,
+                    days = 0,
+                    hours = 0,
+                    minutes = 0,
+                    seconds = 0,
+                    allowed_days = _all_days,
+                    allowed_hours = _all_hours
+                    ):
     '''
         Checks for open slots to schedule the event.
     '''
+    requested_time = get_duration_in_seconds(days = days, hours = hours, minutes = minutes, seconds = seconds)
+
     for i in range(len(events) - 1):
         start_event = events[i]
         start = get_end_datetime(start_event)
         next_event = events[i + 1]
         end = get_start_datetime(next_event)
-
+        
+        hour = end.hour
+        print("hours: ", hour)
 
         print("start: ", start)
         print("end: ", end)
         available_time = (end - start).seconds
         print("available_time: ", available_time)
 
-
-        raise NotImplementedError("schedule_event() has not yet been implemented.")
+# -------------------------- Testing -------------------------- #
 
 if __name__ == '__main__':
     events = get_events(num_events = 10)
     schedule_event(events, 2)
-    print("Finished main.")

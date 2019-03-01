@@ -1,18 +1,7 @@
 '''
     Aristos Athens
 
-    Google calendar scheduler design.
-
-    Input:
-        User schedule
-        Meeting duration
-        Optional: Data range
-
-    Ouptut:
-        Best meeting time?
-        Selection of meeting times?
-
-    API:
+    Get list of events of from Google's API.
 '''
 
 import os
@@ -33,6 +22,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
+# Redirect url if credentials.json not found.
 _credentials_not_found_url = "https://developers.google.com/calendar/quickstart/python"
 
 def _get_credentials():
