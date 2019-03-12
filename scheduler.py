@@ -37,24 +37,24 @@ _all_hours = list(range(0, 24))                 # 24 hours
 
 # -------------------------- General Helper Functions -------------------------- #
 
-def minutes_to_seconds(minutes):
+def _minutes_to_seconds(minutes):
     return 60 * minutes
 
-def hours_to_seconds(hours):
-    return minutes_to_seconds(60 * hours)
+def _hours_to_seconds(hours):
+    return _minutes_to_seconds(60 * hours)
 
-def days_to_seconds(days):
-    return hours_to_seconds(24 * days)
+def _days_to_seconds(days):
+    return _hours_to_seconds(24 * days)
 
-def get_duration_in_seconds(days = 0, hours = 0, minutes = 0, seconds = 0):
-    return days_to_seconds(days) \
-            + hours_to_seconds(hours) \
-            + minutes_to_seconds(minutes) \
+def _get_duration_in_seconds(days = 0, hours = 0, minutes = 0, seconds = 0):
+    return _days_to_seconds(days) \
+            + _hours_to_seconds(hours) \
+            + _minutes_to_seconds(minutes) \
             + seconds
 
 # -------------------------- Scheduler Helper Functions -------------------------- #
 
-def get_datetime_object(event_dict):
+def _get_datetime_object(event_dict):
     '''
         Get date-time object from event dict.
         event_dict has form:
@@ -77,19 +77,19 @@ def get_datetime_object(event_dict):
     
     return datetime_object
 
-def get_start_datetime(event):
+def _get_start_datetime(event):
     '''
         Get start dateTime object from event.
     '''
-    return get_datetime_object(event['start'])
+    return _get_datetime_object(event['start'])
 
-def get_end_datetime(event):
+def _get_end_datetime(event):
     '''
         Get end dateTime object from event.
     '''
-    return get_datetime_object(event['end'])
+    return _get_datetime_object(event['end'])
 
-def is_valid_datetime(datetime_object, allowed_days, allowed_hours):
+def _is_valid_datetime(datetime_object, allowed_days, allowed_hours):
     '''
         Checks that datetime_object conforms to allowed parameters.
     '''
@@ -102,7 +102,7 @@ def is_valid_datetime(datetime_object, allowed_days, allowed_hours):
 
 # -------------------------- Event Scheduling Function -------------------------- #
 
-def schedule_event(events,
+def _schedule_event(events,
                     days = 0,
                     hours = 0,
                     minutes = 0,
@@ -113,24 +113,30 @@ def schedule_event(events,
     '''
         Checks for open slots to schedule the event.
     '''
-    requested_time = get_duration_in_seconds(days = days, hours = hours, minutes = minutes, seconds = seconds)
+    requested_time = _get_duration_in_seconds(days = days, hours = hours, minutes = minutes, seconds = seconds)
 
     for i in range(len(events) - 1):
         start_event = events[i]
-        start = get_end_datetime(start_event)
+        start = _get_end_datetime(start_event)
         next_event = events[i + 1]
-        end = get_start_datetime(next_event)
+        end = _get_start_datetime(next_event)
         
         hour = end.hour
-        print("hours: ", hour)
-
-        print("start: ", start)
-        print("end: ", end)
+        # print("hours: ", hour)
+        # print("start: ", start)
+        # print("end: ", end)
         available_time = (end - start).seconds
-        print("available_time: ", available_time)
+        if available_time >= requested_time:
+            return start
+
+    return "Could not scheduled a meeting."
+        # print("available_time: ", available_time)
 
 # -------------------------- Testing -------------------------- #
 
-if __name__ == '__main__':
+def schedule_event(num_hours):
     events = get_events(num_events = 10)
-    schedule_event(events, 2)
+    return _schedule_event(events, hours = num_hours)
+
+if __name__ == '__main__':
+    schedule_event(1)

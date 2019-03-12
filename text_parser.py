@@ -15,4 +15,6 @@ if __name__ == "__main__":
     '''
         Hi Kerry, can we schedule a meeting for tomorrow?
     '''
+    test("December 15")
+    test("tomorrow")
     test(example_text)
